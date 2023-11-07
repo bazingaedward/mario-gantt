@@ -15,6 +15,9 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@dhtmlx/trial-lib-gantt": "^1.1.2",
+    "@dhtmlx/trial-vue-gantt": "^1.1.2",
+    "element-plus": "^2.4.1",
     "pinia": "^2.1.7",
     "vue": "^3.3.4"
   },
