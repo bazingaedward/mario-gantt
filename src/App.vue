@@ -40,8 +40,8 @@ const tasks = [
     id: 1,
     open: true,
     start_date: '2020-11-06',
-    duration: 8,
-    text: 'vue Gantt Widget222',
+    duration: 3,
+    text: 'vue Gantt Widget2',
     progress: 60,
     type: 'project'
   },
@@ -49,7 +49,7 @@ const tasks = [
     id: 2,
     parent: 1,
     start_date: '2020-11-06',
-    duration: 10,
+    duration: 1,
     text: 'Lib-Gantt',
     progress: 80
   }
@@ -62,6 +62,7 @@ const tasks = [
 ]
 
 const links = [{ source: 2, target: 1, type: 0 }]
+const links2 = [{ source: 1, target: 2, type: 0 }]
 </script>
 
 <template>
@@ -73,7 +74,7 @@ const links = [{ source: 2, target: 1, type: 0 }]
 
   <div style="width: 1256px; height: 1000px">
     <MaterialTheme>
-      <Gantt :scales="scales" :columns="columns" :tasks="tasks" :links="links" />
+      <Gantt :scales="scales" :columns="columns" :tasks="tasks" :links="links2" />
     </MaterialTheme>
   </div>
 </template>

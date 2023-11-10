@@ -121,7 +121,6 @@ export default {
     this.$emit('store', this.store)
     const columnsData = normalizeColumns(this.$props.columns)
     const state = this.store.state
-
     return {
       tasksState: markRaw(state.tasks),
       linksState: markRaw(state.links),
