@@ -31,13 +31,13 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, onMounted, onUnmounted, computed, watch } from 'vue'
+import { defineProps, defineEmits, onMounted, onUnmounted, computed, watch, reactive } from 'vue'
 import CellGrid from './CellGrid'
 import Links from './Links'
 import Bars from './Bars'
 
 // 定义props
-defineProps([
+const props = defineProps([
   'drag',
   'newLink',
   'markers',
@@ -54,9 +54,31 @@ defineProps([
   'borders'
 ])
 
+const {
+  cellHeight,
+  cellWidth,
+  fullHeight,
+  fullWidth,
+  scrollTop,
+  scrollLeft,
+  selected,
+  templates,
+  borders
+} = props
+
 const emit = defineEmits(['action'])
 
-this.chart = {}
+const chart = reactive({})
+
+const dataRequest = () => {
+  const clientHeight = 0
+  const num = Math.ceil(clientHeight / cellHeight) + 1
+  const pos = Math.floor(scrollTop / cellHeight)
+  const start = Math.max(0, pos)
+  const end = pos + num
+  const from = start * cellHeight
+  emit('action', { action: 'data-request', start, end, from })
+}
 
 const action = (data) => {
   emit('action', data)
@@ -65,41 +87,29 @@ const action = (data) => {
 const scroll = () => {
   emit('action', {
     action: 'scroll-chart',
-    top: this.chart.scrollTop,
-    left: this.chart.scrollLeft
+    top: scrollTop,
+    left: scrollLeft
   })
   dataRequest()
 }
 
-const dataRequest = () => {
-  const clientHeight = this.chart.clientHeight || 0
-  const num = Math.ceil(clientHeight / this.cellHeight) + 1
-  const pos = Math.floor(this.chart.scrollTop / this.cellHeight)
-  const start = Math.max(0, pos)
-  const end = pos + num
-  const from = start * this.cellHeight
-  emit('action', { action: 'data-request', start, end, from })
-}
-
 const scrollToTask = (task) => {
   if (task) {
-    const { clientWidth, clientHeight } = this.chart
-
-    let left = this.scrollLeft
-    let top = this.scrollTop
+    let left = scrollLeft
+    let top = scrollTop
 
     if (task.$x <= left) {
-      left = task.$x - this.cellWidth
+      left = task.$x - cellWidth
     } else if (task.$x + task.$w >= clientWidth + left && task.$w < clientWidth) {
-      left = task.$x + task.$w - clientWidth + this.cellWidth
+      left = task.$x + task.$w - clientWidth + cellWidth
     } else if (task.$w > clientWidth) {
-      left = task.$x - this.cellWidth
+      left = task.$x - cellWidth
     }
 
     if (task.$y < top) {
-      top = task.$y - this.cellHeight
+      top = task.$y - cellHeight
     } else if (task.$y + task.$h >= clientHeight + top) {
-      top = task.$y - clientHeight + this.cellHeight
+      top = task.$y - clientHeight + cellHeight
     }
 
     $emit('action', {
@@ -111,60 +121,59 @@ const scrollToTask = (task) => {
 }
 
 onMounted(() => {
-  window.addEventListener('resize', this.dataRequest)
-  this.chart = this.$refs.chart
-  this.dataRequest()
+  window.addEventListener('resize', dataRequest)
+  dataRequest()
 })
 
-const updated = () => {
-  this.chart.scrollTop = this.scrollTop
-  this.chart.scrollLeft = this.scrollLeft
+// const updated = () => {
+//   this.chart.scrollTop = this.scrollTop
+//   this.chart.scrollLeft = this.scrollLeft
 
-  if (this.scrollTop !== this.chart.scrollTop) {
-    emit('action', {
-      action: 'scroll-chart',
-      top: this.chart.scrollTop
-    })
-  }
-}
+//   if (this.scrollTop !== this.chart.scrollTop) {
+//     emit('action', {
+//       action: 'scroll-chart',
+//       top: this.chart.scrollTop
+//     })
+//   }
+// }
 
 onUnmounted(() => {
-  window.removeEventListener('resize', this.dataRequest)
+  window.removeEventListener('resize', dataRequest)
 })
 
 const areaStyle = computed(() => {
   return {
-    width: `${this.fullWidth}px`,
-    height: `${this.fullHeight}px`
+    width: `${fullWidth}px`,
+    height: `${fullHeight}px`
   }
 })
 
-const markersHeight = computed(() => {
-  return this.fullHeight > this.chart.clientHeight ? this.chart.clientHeight : this.fullHeight
-})
+// const markersHeight = computed(() => {
+//   return this.fullHeight > this.chart.clientHeight ? this.chart.clientHeight : this.fullHeight
+// })
 
 const markersStyle = computed(() => {
   return {
-    height: `${this.markersHeight}px`,
-    left: `${-this.scrollLeft}px`
+    height: `${markersHeight}px`,
+    left: `${-scrollLeft}px`
   }
 })
 
 const selectStyle = computed(() => {
   return {
-    height: this.cellHeight - 1 + 'px',
-    top: this.selected.$y - 3 + 'px'
+    height: cellHeight - 1 + 'px',
+    top: selected.$y - 3 + 'px'
   }
 })
 
 watch('selected', () => {
-  if (this.selected) {
-    this.scrollToTask(this.selected)
+  if (selected) {
+    scrollToTask(selected)
   }
 })
 
 watch('cellHeight', () => {
-  this.scroll()
+  scroll()
 })
 </script>
 
