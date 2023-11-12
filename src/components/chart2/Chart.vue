@@ -31,7 +31,16 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, onMounted, onUnmounted, computed, watch, reactive } from 'vue'
+import {
+  defineProps,
+  defineEmits,
+  onMounted,
+  onUnmounted,
+  onUpdated,
+  computed,
+  watch,
+  ref
+} from 'vue'
 import CellGrid from './CellGrid'
 import Links from './Links'
 import Bars from './Bars'
@@ -68,12 +77,12 @@ const {
 
 const emit = defineEmits(['action'])
 
-const chart = reactive({})
+const chart = ref({})
 
 const dataRequest = () => {
-  const clientHeight = 0
+  const clientHeight = chart.value.clientHeight || 0
   const num = Math.ceil(clientHeight / cellHeight) + 1
-  const pos = Math.floor(scrollTop / cellHeight)
+  const pos = Math.floor(chart.value.scrollTop / cellHeight)
   const start = Math.max(0, pos)
   const end = pos + num
   const from = start * cellHeight
@@ -95,6 +104,7 @@ const scroll = () => {
 
 const scrollToTask = (task) => {
   if (task) {
+    const { clientWidth, clientHeight } = chart.value
     let left = scrollLeft
     let top = scrollTop
 
@@ -112,7 +122,7 @@ const scrollToTask = (task) => {
       top = task.$y - clientHeight + cellHeight
     }
 
-    $emit('action', {
+    emit('action', {
       action: 'scroll-chart',
       top,
       left
@@ -125,17 +135,17 @@ onMounted(() => {
   dataRequest()
 })
 
-// const updated = () => {
-//   this.chart.scrollTop = this.scrollTop
-//   this.chart.scrollLeft = this.scrollLeft
+onUpdated(() => {
+  chart.value.scrollTop = scrollTop
+  chart.value.scrollLeft = scrollLeft
 
-//   if (this.scrollTop !== this.chart.scrollTop) {
-//     emit('action', {
-//       action: 'scroll-chart',
-//       top: this.chart.scrollTop
-//     })
-//   }
-// }
+  if (scrollTop !== chart.value.scrollTop) {
+    emit('action', {
+      action: 'scroll-chart',
+      top: chart.value.scrollTop
+    })
+  }
+})
 
 onUnmounted(() => {
   window.removeEventListener('resize', dataRequest)

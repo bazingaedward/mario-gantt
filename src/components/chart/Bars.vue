@@ -134,7 +134,6 @@ export default {
       const { clientX, clientY } = point
       const id = node.dataset.id
       const css = target.classList
-      console.log(node.dataset, css)
 
       if (css.contains('link')) {
         this.start = {
