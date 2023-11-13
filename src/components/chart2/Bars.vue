@@ -7,9 +7,6 @@
     @mousedown="mousedown"
     @mouseup="mouseup"
     @mousemove="mousemove"
-    @touchstart="touchstart"
-    @touchmove="touchmove"
-    @touchend="touchend"
     @click="click"
     @dblclick="dblclick"
     @dragstart="() => false"
@@ -54,272 +51,230 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { reactive, computed, ref } from 'vue'
 import { locate, locateID } from '@dhtmlx/trial-lib-gantt'
 import NewLink from './NewLink.vue'
 
-export default {
-  components: {
-    NewLink
-  },
+const props = defineProps(['tasks', 'drag', 'newLink', 'cellWidth', 'templates'])
+const emit = defineEmits(['action'])
+const layer = ref(null)
 
-  props: ['tasks', 'drag', 'newLink', 'cellWidth', 'templates'],
+const state = reactive({
+  taskMove: null,
+  layer: null,
+  start: null,
+  end: null,
+  ignoreNextClick: false,
+  touched: null,
+  touchTimer: null
+})
 
-  data: () => ({
-    taskMove: null,
-    layer: null,
-    start: null,
-    end: null,
-    ignoreNextClick: false,
-    touched: null,
-    touchTimer: null
-  }),
+function mousedown(e) {
+  const node = locate(e)
+  if (!node) return
+  down(node, e.target, e)
+}
 
-  methods: {
-    mousedown(e) {
-      const node = locate(e)
-      if (!node) return
+function mousemove(e) {
+  move(e, e)
+}
 
-      this.down(node, e.target, e)
-    },
+function mouseup(e) {
+  up(e)
+}
 
-    mousemove(e) {
-      this.move(e, e)
-    },
+function contextmenu(e) {
+  if (!state.touched || !state.touchTimer) {
+    e.preventDefault()
+    return false
+  }
+}
 
-    mouseup(e) {
-      this.up(e)
-    },
+function down(node, target, point) {
+  const { clientX, clientY } = point
+  const id = node.dataset.id
+  const css = target.classList
 
-    touchstart(e) {
-      const node = locate(e)
-      console.log(node, e, '112')
-      if (node) {
-        const target = e.target
-        this.touchTimer = setTimeout(() => {
-          this.touched = true
-          this.down(node, target, e.touches[0])
-        }, 300)
-      }
-    },
-
-    touchmove(e) {
-      if (this.touched) {
-        e.preventDefault()
-        this.move(e, e.touches[0])
-      } else if (this.touchTimer) {
-        clearTimeout(this.touchTimer)
-        this.touchTimer = null
-      }
-    },
-
-    touchend(e) {
-      this.touched = null
-      if (this.touchTimer) {
-        clearTimeout(this.touchTimer)
-        this.touchTimer = null
-      }
-
-      this.up(e.changedTouches[0])
-    },
-
-    contextmenu(e) {
-      if (!this.touched || !this.touchTimer) {
-        e.preventDefault()
-        return false
-      }
-    },
-
-    down(node, target, point) {
-      const { clientX, clientY } = point
-      const id = node.dataset.id
-      const css = target.classList
-
-      if (css.contains('link')) {
-        this.start = {
-          id,
-          start: css.contains('left'),
-          x: clientX,
-          y: clientY
-        }
-        this.startDrag()
-      } else {
-        let mode = this.getMoveMode(node, point) || 'move'
-
-        this.taskMove = {
-          id,
-          mode,
-          node,
-          x: clientX,
-          dx: 0,
-          l: parseInt(node.style.left),
-          w: parseInt(node.style.width)
-        }
-        this.startDrag()
-      }
-    },
-
-    up(point) {
-      if (this.start) {
-        const { clientX, clientY } = point
-
-        const source = this.start.id
-        const fromStart = this.start.start
-        this.start = this.end = null
-
-        const targetNode = document.elementFromPoint(clientX, clientY)
-        const node = locate(targetNode)
-        if (!node) return
-
-        const css = node.classList
-        const target = node.dataset.id
-        if (!target || source == target) return
-
-        let toStart = true
-        if (css.contains('link')) {
-          if (css.contains('right')) {
-            toStart = false
-          }
-        } else {
-          const rect = node.getBoundingClientRect()
-          const x = clientX - rect.left
-          const w = rect.width
-          toStart = x < w / 2
-        }
-
-        const type = (fromStart ? 1 : 0) + (toStart ? 0 : 2)
-        if (this.newLink) {
-          this.$emit('action', {
-            action: 'add-link',
-            obj: { source, target, type }
-          })
-        }
-        this.endDrag()
-      } else if (this.taskMove) {
-        const { id, mode, dx, node, l, w, start } = this.taskMove
-        this.taskMove = null
-
-        if (!start) return
-
-        const time = Math.round(dx / this.cellWidth)
-        // restore node position
-        if (!time) {
-          node.style.left = `${l}px`
-          node.style.width = `${w}px`
-        }
-        this.$emit('action', {
-          action: 'update-task-time',
-          id,
-          obj: { mode, time }
-        })
-        this.ignoreNextClick = true
-        this.endDrag()
-      }
-    },
-
-    move(e, point) {
-      const { clientX, clientY } = point
-
-      if (this.start) {
-        this.end = { x: clientX, y: clientY }
-      } else if (this.taskMove && this.drag) {
-        const { node, mode, l, w, x, id } = this.taskMove
-        const dx = (this.taskMove.dx = clientX - x)
-        if (!this.start && Math.abs(dx) < 20) return
-
-        if (mode === 'start') {
-          node.style.left = `${l + dx}px`
-          node.style.width = `${w - dx}px`
-        } else if (mode === 'end') {
-          node.style.width = `${w + dx}px`
-        } else if (mode === 'move') {
-          node.style.left = `${l + dx}px`
-        }
-
-        this.taskMove.start = true
-
-        this.$emit('action', {
-          action: 'move-task',
-          id,
-          obj: {
-            width: parseInt(node.style.width),
-            left: parseInt(node.style.left)
-          }
-        })
-      } else {
-        const mnode = locate(e)
-        if (mnode) {
-          const mode = this.getMoveMode(mnode, point)
-          mnode.style.cursor = mode ? 'col-resize' : 'pointer'
-        }
-      }
-    },
-
-    click(e) {
-      if (this.ignoreNextClick) {
-        this.ignoreNextClick = true
-        return
-      }
-
-      const id = locateID(e.target)
-
-      if (id) {
-        this.$emit('action', { action: 'select-task', id })
-      }
-    },
-
-    dblclick(e) {
-      const id = locateID(e.target)
-
-      if (id) {
-        this.$emit('action', { action: 'show-details', id })
-      }
-    },
-
-    getMoveMode(node, e) {
-      if (this.getTask(node.dataset.id).type === 'milestone') return ''
-
-      const rect = node.getBoundingClientRect()
-      const p = (e.clientX - rect.left) / rect.width
-      let delta = 0.2 / (rect.width > 200 ? rect.width / 200 : 1)
-
-      if (p < delta) return 'start'
-      if (p > 1 - delta) return 'end'
-      return ''
-    },
-
-    getTask(id) {
-      return this.tasks.find((a) => a.id == id)
-    },
-
-    taskStyle(task) {
-      return `left:${task.$x}px;top:${task.$y}px;width:${task.$w}px;height:${task.$h}px`
-    },
-
-    startDrag() {
-      document.body.style.userSelect = 'none'
-    },
-
-    endDrag() {
-      document.body.style.userSelect = ''
+  if (css.contains('link')) {
+    state.start = {
+      id,
+      start: css.contains('left'),
+      x: clientX,
+      y: clientY
     }
-  },
+  } else {
+    let mode = getMoveMode(node, point) || 'move'
 
-  computed: {
-    addLink() {
-      const data = !!this.$refs.layer && !!this.start && !!this.end
-      return data
-    },
+    state.taskMove = {
+      id,
+      mode,
+      node,
+      x: clientX,
+      dx: 0,
+      l: parseInt(node.style.left),
+      w: parseInt(node.style.width)
+    }
+  }
+  startDrag()
+}
 
-    lineHeight() {
-      return `line-height: ${this.tasks.length ? this.tasks[0].$h : 0}px`
-    },
+function up(point) {
+  if (state.start) {
+    const { clientX, clientY } = point
 
-    template() {
-      return this.templates && this.templates.taskText
+    const source = state.start.id
+    const fromStart = state.start.start
+    state.start = state.end = null
+
+    const targetNode = document.elementFromPoint(clientX, clientY)
+    const node = locate(targetNode)
+    if (!node) return
+
+    const css = node.classList
+    const target = node.dataset.id
+    if (!target || source == target) return
+
+    let toStart = true
+    if (css.contains('link')) {
+      if (css.contains('right')) {
+        toStart = false
+      }
+    } else {
+      const rect = node.getBoundingClientRect()
+      const x = clientX - rect.left
+      const w = rect.width
+      toStart = x < w / 2
+    }
+
+    const type = (fromStart ? 1 : 0) + (toStart ? 0 : 2)
+    if (newLink) {
+      emit('action', {
+        action: 'add-link',
+        obj: { source, target, type }
+      })
+    }
+    endDrag()
+  } else if (state.taskMove) {
+    const { id, mode, dx, node, l, w, start } = state.taskMove
+    state.taskMove = null
+
+    if (!state.start) return
+
+    const time = Math.round(dx / cellWidth)
+    // restore node position
+    if (!time) {
+      node.style.left = `${l}px`
+      node.style.width = `${w}px`
+    }
+    emit('action', {
+      action: 'update-task-time',
+      id,
+      obj: { mode, time }
+    })
+    state.ignoreNextClck = true
+    endDrag()
+  }
+}
+
+function move(e, point) {
+  const { clientX, clientY } = point
+  console.log('move', state.start, state.taskMove, props.drag)
+  if (state.start) {
+    state.end = { x: clientX, y: clientY }
+  } else if (state.taskMove && props.drag) {
+    const { node, mode, l, w, x, id } = state.taskMove
+    const dx = (state.taskMove.dx = clientX - x)
+    if (!state.start && Math.abs(dx) < 20) return
+
+    if (mode === 'start') {
+      node.style.left = `${l + dx}px`
+      node.style.width = `${w - dx}px`
+    } else if (mode === 'end') {
+      node.style.width = `${w + dx}px`
+    } else if (mode === 'move') {
+      node.style.left = `${l + dx}px`
+    }
+
+    state.taskMove.start = true
+
+    emit('action', {
+      action: 'move-task',
+      id,
+      obj: {
+        width: parseInt(node.style.width),
+        left: parseInt(node.style.left)
+      }
+    })
+  } else {
+    const mnode = locate(e)
+    if (mnode) {
+      const mode = getMoveMode(mnode, point)
+      mnode.style.cursor = mode ? 'col-resize' : 'pointer'
     }
   }
 }
+
+function click(e) {
+  if (state.ignoreNextClick) {
+    state.ignoreNextClick = true
+    return
+  }
+
+  const id = locateID(e.target)
+
+  if (id) {
+    emit('action', { action: 'select-task', id })
+  }
+}
+
+function dblclick(e) {
+  const id = locateID(e.target)
+
+  if (id) {
+    emit('action', { action: 'show-details', id })
+  }
+}
+
+function getMoveMode(node, e) {
+  if (getTask(node.dataset.id).type === 'milestone') return ''
+
+  const rect = node.getBoundingClientRect()
+  const p = (e.clientX - rect.left) / rect.width
+  let delta = 0.2 / (rect.width > 200 ? rect.width / 200 : 1)
+
+  if (p < delta) return 'start'
+  if (p > 1 - delta) return 'end'
+  return ''
+}
+
+function getTask(id) {
+  return props.tasks.find((a) => a.id == id)
+}
+
+function taskStyle(task) {
+  return `left:${task.$x}px;top:${task.$y}px;width:${task.$w}px;height:${task.$h}px`
+}
+
+function startDrag() {
+  document.body.style.userSelect = 'none'
+}
+
+function endDrag() {
+  document.body.style.userSelect = ''
+}
+
+const addLink = computed(() => {
+  return !!state.layer && !!state.start && !!state.end
+})
+
+const lineHeight = computed(() => {
+  return `line-height: ${props.tasks.length ? props.tasks[0].$h : 0}px`
+})
+
+const template = computed(() => {
+  return state.templates && state.templates.taskText
+})
 </script>
 
 <style scoped>

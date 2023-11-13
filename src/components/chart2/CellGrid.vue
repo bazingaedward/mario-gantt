@@ -2,21 +2,18 @@
   <div :style="cellStyle"></div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue'
 import { grid } from '@dhtmlx/trial-lib-gantt'
 
-export default {
-  props: ['width', 'height', 'borders'],
+const props = defineProps(['width', 'height', 'borders'])
 
-  computed: {
-    cellStyle() {
-      const img = grid(this.width, this.height, '#ebebeb', this.borders)
-      return {
-        width: '100%',
-        height: '100%',
-        backgroundImage: `url(${img})`
-      }
-    }
+const cellStyle = computed(() => {
+  const img = grid(props.width, props.height, '#ebebeb', props.borders)
+  return {
+    width: '100%',
+    height: '100%',
+    backgroundImage: `url(${img})`
   }
-}
+})
 </script>
