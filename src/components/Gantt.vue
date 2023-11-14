@@ -62,7 +62,7 @@
 import { markRaw, inject, provide, readonly } from 'vue'
 
 import Grid from './grid/Grid.vue'
-import Chart from './chart2/Chart.vue'
+import Chart from './chart/Chart.vue'
 import Sidebar from './sidebar/Sidebar.vue'
 import TimeScale from './TimeScale.vue'
 import Tooltip from '@/wx/Tooltip.vue'

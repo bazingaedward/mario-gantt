@@ -4,10 +4,8 @@
   </svg>
 </template>
 
-<script>
-export default {
-  props: ['links', 'width', 'height']
-}
+<script setup>
+defineProps(['links', 'width', 'height'])
 </script>
 
 <style scoped>
