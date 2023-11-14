@@ -12,7 +12,7 @@
     </div>
 
     <div class="area" :style="areaStyle">
-      <CellGrid :width="cellWidth" :height="cellHeight" :borders="borders" />
+      <CellGrid :width="cellWidth" :height="props.cellHeight" :borders="borders" />
 
       <div v-if="selected" class="selection" :style="selectStyle"></div>
 
@@ -46,17 +46,7 @@ import Links from './Links'
 import Bars from './Bars'
 
 // 定义props
-const {
-  cellHeight,
-  cellWidth,
-  fullHeight,
-  fullWidth,
-  scrollTop,
-  scrollLeft,
-  selected,
-  templates,
-  borders
-} = defineProps([
+const props = defineProps([
   'drag',
   'newLink',
   'markers',
@@ -79,11 +69,11 @@ const chart = ref({})
 
 const dataRequest = () => {
   const clientHeight = chart.value.clientHeight || 0
-  const num = Math.ceil(clientHeight / cellHeight) + 1
-  const pos = Math.floor(chart.value.scrollTop / cellHeight)
+  const num = Math.ceil(clientHeight / props.cellHeight) + 1
+  const pos = Math.floor(chart.value.scrollTop / props.cellHeight)
   const start = Math.max(0, pos)
   const end = pos + num
-  const from = start * cellHeight
+  const from = start * props.cellHeight
   emit('action', { action: 'data-request', start, end, from })
 }
 
@@ -94,8 +84,8 @@ const action = (data) => {
 const scroll = () => {
   emit('action', {
     action: 'scroll-chart',
-    top: scrollTop,
-    left: scrollLeft
+    top: props.scrollTop,
+    left: props.scrollLeft
   })
   dataRequest()
 }
@@ -115,9 +105,9 @@ const scrollToTask = (task) => {
     }
 
     if (task.$y < top) {
-      top = task.$y - cellHeight
+      top = task.$y - props.cellHeight
     } else if (task.$y + task.$h >= clientHeight + top) {
-      top = task.$y - clientHeight + cellHeight
+      top = task.$y - clientHeight + props.cellHeight
     }
 
     emit('action', {
@@ -134,10 +124,10 @@ onMounted(() => {
 })
 
 onUpdated(() => {
-  chart.value.scrollTop = scrollTop
-  chart.value.scrollLeft = scrollLeft
+  chart.value.scrollTop = props.scrollTop
+  chart.value.scrollLeft = props.scrollLeft
 
-  if (scrollTop !== chart.value.scrollTop) {
+  if (props.scrollTop !== chart.value.scrollTop) {
     emit('action', {
       action: 'scroll-chart',
       top: chart.value.scrollTop
@@ -151,32 +141,32 @@ onUnmounted(() => {
 
 const areaStyle = computed(() => {
   return {
-    width: `${fullWidth}px`,
-    height: `${fullHeight}px`
+    width: `${props.fullWidth}px`,
+    height: `${props.fullHeight}px`
   }
 })
 
-// const markersHeight = computed(() => {
-//   return fullHeight > chart.value.clientHeight ? chart.value.clientHeight : fullHeight
-// })
+const markersHeight = computed(() => {
+  return props.fullHeight > chart.value.clientHeight ? chart.value.clientHeight : props.fullHeight
+})
 
 const markersStyle = computed(() => {
   return {
-    height: `${markersHeight}px`,
+    height: `${markersHeight.value}px`,
     left: `${-scrollLeft}px`
   }
 })
 
 const selectStyle = computed(() => {
   return {
-    height: cellHeight - 1 + 'px',
-    top: selected.$y - 3 + 'px'
+    height: props.cellHeight - 1 + 'px',
+    top: props.selected.$y - 3 + 'px'
   }
 })
 
 watch(
-  () => selected,
-  () => {
+  () => props.selected,
+  (selected) => {
     if (selected) {
       scrollToTask(selected)
     }
@@ -184,7 +174,7 @@ watch(
 )
 
 watch(
-  () => cellHeight,
+  () => props.cellHeight,
   () => {
     scroll()
   }
