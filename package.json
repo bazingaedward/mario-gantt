@@ -2,6 +2,18 @@
   "name": "mario-gantt",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/mario-gantt.umd.js",
+  "module": "./dist/mario-gantt.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/mario-gantt.mjs",
+      "require": "./dist/mario-gantt.umd.js"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build --config src/vite.build.ts",
