@@ -93,8 +93,8 @@ const scroll = () => {
 const scrollToTask = (task) => {
   if (task) {
     const { clientWidth, clientHeight } = chart.value
-    let left = scrollLeft
-    let top = scrollTop
+    let left = props.scrollLeft
+    let top = props.scrollTop
 
     if (task.$x <= left) {
       left = task.$x - cellWidth
