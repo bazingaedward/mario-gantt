@@ -58,158 +58,173 @@
   </Tooltip>
 </template>
 
-<script>
-import { markRaw, inject, provide, readonly } from 'vue'
-
+<script setup>
+import {
+  defineProps,
+  defineEmits,
+  markRaw,
+  inject,
+  provide,
+  onBeforeUpdate,
+  readonly,
+  reactive,
+  getCurrentInstance,
+  watch,
+  onMounted,
+  onUnmounted,
+  computed,
+  ref,
+  defineExpose
+} from 'vue'
 import Grid from './grid/Grid.vue'
 import Chart from './chart/Chart.vue'
 import Sidebar from './sidebar/Sidebar.vue'
 import TimeScale from './TimeScale.vue'
 import Tooltip from '@/wx/Tooltip.vue'
 import IconButton from '@/wx/IconButton.vue'
-
-import { VueLocalData, VueLocalState } from '../state/local.js'
+import { VueLocalData, VueLocalState, Vue3LocalData } from '../state/local.js'
 import { normalizeColumns } from '@dhtmlx/trial-lib-gantt'
-
 import en from '../locales/en'
 import locale from '@/wx/locales/en'
 import { LocaleContext } from '@/wx/locale'
 
-export default {
-  name: 'Gantt',
-  setup() {
-    const check = inject(LocaleContext, null)
-    if (!check) provide(LocaleContext, readonly(locale().extend(en)))
-  },
-  components: {
-    Grid,
-    Chart,
-    Sidebar,
-    TimeScale,
-    Tooltip,
-    IconButton
-  },
+const check = inject(LocaleContext, null)
+if (!check) provide(LocaleContext, readonly(locale().extend(en)))
 
-  props: {
-    templates: { type: Object, default: () => {} },
-    markers: { type: Array, default: () => [] },
-    taskTypes: { type: Array, default: () => ['task', 'milestone'] },
-    tasks: { type: Array, default: () => [] },
-    links: { type: Array, default: () => [] },
-    scales: { type: Array, default: () => [] },
-    columns: { type: Array, default: () => [] },
-    start: { type: Date, default: null },
-    end: { type: Date, default: null },
-    cellWidth: { type: Number, default: 100 },
-    cellHeight: { type: Number, default: 38 },
-    scaleHeight: { type: Number, default: 30 },
-    readonly: { type: [Boolean, Object], default: false },
-    grid: { type: [Boolean, Number], default: true },
-    tooltip: { type: Object, default: null },
-    borders: { type: String, default: 'full' }
-  },
+const props = defineProps({
+  templates: { type: Object, default: () => {} },
+  markers: { type: Array, default: () => [] },
+  taskTypes: { type: Array, default: () => ['task', 'milestone'] },
+  tasks: { type: Array, default: () => [] },
+  links: { type: Array, default: () => [] },
+  scales: { type: Array, default: () => [] },
+  columns: { type: Array, default: () => [] },
+  start: { type: Date, default: null },
+  end: { type: Date, default: null },
+  cellWidth: { type: Number, default: 100 },
+  cellHeight: { type: Number, default: 38 },
+  scaleHeight: { type: Number, default: 30 },
+  readonly: { type: [Boolean, Object], default: false },
+  grid: { type: [Boolean, Number], default: true },
+  tooltip: { type: Object, default: null },
+  borders: { type: String, default: 'full' }
+})
+const instance = getCurrentInstance()
+const emit = defineEmits(['store'])
+let store = new Vue3LocalData(instance)
+let state = new VueLocalState(instance)
+let action = () => {}
 
-  beforeCreate() {
-    this.store = new VueLocalData(this)
-    this.store.init(this.$props)
+onBeforeUpdate(() => {
+  store = new VueLocalData(instance)
+  store.init(props)
 
-    this.state = new VueLocalState(this)
-    this.action = this.state.actions(this.store, this.$emit.bind(this))
-  },
+  state = new VueLocalState(instance)
+  action = state.actions(store, instance.emit)
+})
 
-  data() {
-    this.$emit('store', this.store)
-    const columnsData = normalizeColumns(this.$props.columns)
-    const state = this.store.state
-    return {
-      tasksState: markRaw(state.tasks),
-      linksState: markRaw(state.links),
-      scalesState: markRaw(state.scales),
-      tasksMap: markRaw(state.tasksMap),
+emit('store', store)
+store.init(props)
+const stateValues = state.getValues()
+const { scrollTop, from, selected, scrollLeft } = stateValues
 
-      compactWidth: 650,
-      compactMode: true,
+const columnsData = normalizeColumns(props.columns)
+const tasksState = markRaw(store.state.tasks)
+const linksState = markRaw(store.state.links)
+const scalesState = markRaw(store.state.scales)
+let tasksMap = markRaw(store.state.tasksMap)
+const compactWidth = 650
+const compactMode = ref(true)
+const ro = ref(null)
 
-      columnsData,
-      ...this.state.getValues()
-    }
-  },
-
-  watch: {
-    cellWidth() {
-      this.store.init(this.$props)
-    },
-
-    cellHeight() {
-      this.store.init(this.$props)
-    },
-
-    scaleHeight() {
-      this.store.init(this.$props)
-    },
-
-    tasks() {
-      this.store.init(this.$props)
-      this.tasksMap = this.store.state.tasksMap
-    }
-  },
-
-  methods: {
-    getTooltipData(id) {
-      return this.store.getTask(id)
-    },
-
-    resize(data) {
-      this.compactMode = data[0].contentRect.width <= this.compactWidth
-    }
-  },
-
-  mounted() {
-    this.ro = new ResizeObserver(this.resize)
-    this.ro.observe(document.body)
-  },
-
-  unmounted() {
-    this.ro.disconnect()
-  },
-
-  computed: {
-    gridWidth() {
-      return this.compactMode ? 50 : this.grid.width || 400
-    },
-
-    readOnly() {
-      const { readonly } = this
-      if (typeof readonly === 'object') return readonly
-
-      return {
-        noDrag: readonly,
-        noEdit: readonly,
-        noNewLink: readonly
-      }
-    },
-
-    fullWidth() {
-      return this.scalesState.width
-    },
-
-    fullHeight() {
-      return this.tasksState.length * this.cellHeight
-    },
-
-    renderTasks() {
-      return this.tasksState.slice(this.dataStart, this.dataEnd)
-    },
-
-    markersData() {
-      const { start, diff } = this.scalesState
-      return this.markers.map((marker) => ({
-        ...marker,
-        left: diff(marker.start, start) * this.cellWidth
-      }))
-    }
+watch(
+  () => props.cellWidth,
+  () => {
+    store.init(props)
   }
+)
+
+watch(
+  () => props.cellHeight,
+  () => {
+    store.init(props)
+  }
+)
+
+watch(
+  () => props.cellHeight,
+  () => {
+    store.init(props)
+  }
+)
+
+watch(
+  () => props.scaleHeight,
+  () => {
+    store.init(props)
+  }
+)
+
+watch(
+  () => props.tasks,
+  () => {
+    store.init(props)
+    console.log(store, 11)
+    tasksMap = store.state.tasksMap
+  }
+)
+
+function getTooltipData(id) {
+  return store.getTask(id)
 }
+
+function resize(data) {
+  compactMode.value = data[0].contentRect.width <= compactWidth
+}
+
+onMounted(() => {
+  ro.value = new ResizeObserver(resize)
+  ro.value.observe(document.body)
+})
+
+onUnmounted(() => {
+  ro.value.disconnect()
+})
+
+const gridWidth = computed(() => {
+  return compactMode.value ? 50 : props.grid.width || 400
+})
+
+const readOnly = computed(() => {
+  const { readonly } = props
+  if (typeof readonly === 'object') return readonly
+
+  return {
+    noDrag: readonly,
+    noEdit: readonly,
+    noNewLink: readonly
+  }
+})
+
+const fullWidth = computed(() => {
+  return scalesState.width
+})
+
+const fullHeight = computed(() => {
+  return tasksState.length * props.cellHeight
+})
+
+const renderTasks = computed(() => {
+  return tasksState.slice(stateValues.dataStart, stateValues.dataEnd)
+})
+
+const markersData = computed(() => {
+  const { start, diff } = scalesState
+  return props.markers.map((marker) => ({
+    ...marker,
+    left: diff(marker.start, start) * this.cellWidth
+  }))
+})
 </script>
 
 <style scoped>

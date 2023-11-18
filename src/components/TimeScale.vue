@@ -9,10 +9,18 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, onMounted, onUnmounted, onUpdated, computed, watch } from 'vue'
+import {
+  defineProps,
+  defineEmits,
+  onMounted,
+  onUnmounted,
+  onUpdated,
+  computed,
+  watch,
+  toRaw
+} from 'vue'
 
 const props = defineProps(['scales', 'scrollLeft'])
-
 const scaleStyle = computed(() => {
   return {
     width: `${props.scales.width}px`,
