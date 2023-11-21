@@ -20,7 +20,6 @@
 
       <Bars
         :tasks="tasks"
-        :templates="templates"
         :cellWidth="cellWidth"
         :drag="drag"
         :newLink="newLink"
@@ -30,7 +29,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   defineProps,
   defineEmits,
@@ -41,9 +40,9 @@ import {
   watch,
   ref
 } from 'vue'
-import CellGrid from './CellGrid'
-import Links from './Links'
-import Bars from './Bars'
+import CellGrid from './CellGrid.vue'
+import Links from './Links.vue'
+import Bars from './Bars.vue'
 
 // 定义props
 const props = defineProps([
@@ -59,7 +58,6 @@ const props = defineProps([
   'fullWidth',
   'fullHeight',
   'selected',
-  'templates',
   'borders'
 ])
 

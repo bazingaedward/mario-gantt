@@ -8,17 +8,8 @@
   </div>
 </template>
 
-<script setup>
-import {
-  defineProps,
-  defineEmits,
-  onMounted,
-  onUnmounted,
-  onUpdated,
-  computed,
-  watch,
-  toRaw
-} from 'vue'
+<script setup lang="ts">
+import { computed } from 'vue'
 
 const props = defineProps(['scales', 'scrollLeft'])
 const scaleStyle = computed(() => {

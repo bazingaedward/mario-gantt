@@ -14,11 +14,7 @@
     <div
       v-for="task in tasks"
       :key="task.id"
-      :class="[
-        'bar',
-        task.type || 'task',
-        { touch: state.touched && taskMove && task.id == taskMove.id }
-      ]"
+      :class="['bar', task.type || 'task']"
       :style="taskStyle(task)"
       :data-id="task.id"
       :data-type="task.type"
@@ -33,8 +29,6 @@
 
         <div v-if="task.textLeft" class="textLeft">{{ task.textLeft }}</div>
         <div v-if="task.textRight" class="textRight">{{ task.textRight }}</div>
-
-        <component v-if="template" :is="templates.taskText" :data="task"></component>
 
         <div v-else class="text">{{ task.text }}</div>
       </template>
@@ -56,12 +50,14 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { reactive, computed, ref, watch } from 'vue'
-import { locate, locateID } from '@dhtmlx/trial-lib-gantt'
+import { isNil } from 'lodash-es'
 import NewLink from './NewLink.vue'
+import { positionMap } from '@/constant'
+import { locateID, locate } from '@/utils'
 
-const props = defineProps(['tasks', 'drag', 'newLink', 'cellWidth', 'templates'])
+const props = defineProps(['tasks', 'drag', 'newLink', 'cellWidth'])
 const emit = defineEmits(['action'])
 const layer = ref(null)
 
@@ -187,7 +183,6 @@ function move(e, point) {
   const { clientX, clientY } = point
   if (state.start) {
     state.end = { x: clientX, y: clientY }
-    // console.log(state.end, 11)
   } else if (state.taskMove && props.drag) {
     const { node, mode, l, w, x, id } = state.taskMove
     const dx = (state.taskMove.dx = clientX - x)
@@ -259,7 +254,10 @@ function getTask(id) {
 }
 
 function taskStyle(task) {
-  return `left:${task.$x}px;top:${task.$y}px;width:${task.$w}px;height:${task.$h}px`
+  const attr = positionMap[task.id]
+  if (isNil(attr)) return ''
+
+  return `left:${attr.$x}px;top:${attr.$y}px;width:${attr.$w}px;height:${attr.$h}px`
 }
 
 function startDrag() {
@@ -276,10 +274,6 @@ const addLink = computed(() => {
 
 const lineHeight = computed(() => {
   return `line-height: ${props.tasks.length ? props.tasks[0].$h : 0}px`
-})
-
-const template = computed(() => {
-  return state.templates && state.templates.taskText
 })
 </script>
 

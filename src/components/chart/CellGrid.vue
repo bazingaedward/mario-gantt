@@ -2,7 +2,7 @@
   <div :style="cellStyle"></div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { grid } from '@dhtmlx/trial-lib-gantt'
 

@@ -1,32 +1,7 @@
 <script setup lang="ts">
 import { Gantt, DefaultTheme, MaterialTheme } from './tt'
 
-const tableData = [
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles'
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles'
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles'
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles'
-  }
-]
-const scales = [
-  { unit: 'month', step: 1, format: 'MMMM yyy' },
-  { unit: 'day', step: 1, format: 'd' }
-]
+const scales = [{ unit: 'day', step: 1, format: 'd' }]
 
 const columns = [
   { name: 'text', label: 'Task name', width: '100%' },
