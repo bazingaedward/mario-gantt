@@ -27,3 +27,16 @@ export interface Scale {
    */
   date?: string | ((date: Date) => any)
 }
+
+export interface Point {
+  x: number
+  y: number
+}
+
+export interface GanttLink {
+  id: number
+  serverId?: number
+  source: number
+  target: number
+  type: number
+}

@@ -1,11 +1,17 @@
 <template>
   <svg class="links" :width="width" :height="height">
-    <polyline class="line" v-for="link in links" :key="link.id" :points="link.$p" />
+    <polyline class="line" v-for="link in links" :key="link.id" :points="getLinkPoints(link)" />
   </svg>
 </template>
 
 <script setup lang="ts">
+import type { GanttLink } from '@/typing'
+import { generateLinkPoints } from '@/utils'
 defineProps(['links', 'width', 'height'])
+
+const getLinkPoints = (link: GanttLink) => {
+  return generateLinkPoints({ x: 400, y: 19 }, { x: 100, y: 57 })
+}
 </script>
 
 <style scoped>

@@ -1,4 +1,4 @@
-import type { Scale } from '@/typing'
+import type { Point, Scale } from '@/typing'
 import { TIME_SCALE_ROW_HEIGHT } from './constant'
 import { format, add, isBefore, parse } from 'date-fns'
 /**
@@ -48,6 +48,11 @@ export const locateID = (e: any) => {
   return dataset?.id
 }
 
+/**
+ * 返回hover等事件的父级组件，并且必须包含id属性
+ * @param e
+ * @returns
+ */
 export const locate = (e: any) => {
   const parent = e?.target?.parentElement
   const dataset = parent?.dataset
@@ -55,4 +60,28 @@ export const locate = (e: any) => {
     return parent
   }
   return null
+}
+
+/**
+ * 基于起始结束点生成svg的polygon 点路径
+ * @param start
+ * @param end
+ * @returns
+ */
+export const generateLinkPoints = (start: Point, end: Point) => {
+  const points: Point[] = [start]
+
+  // 生成S型路径
+  points.push({ x: start.x + 20, y: start.y })
+  points.push({ x: start.x + 20, y: Math.round((start.y + end.y) / 2) })
+  points.push({ x: end.x - 20, y: Math.round((start.y + end.y) / 2) })
+  points.push({ x: end.x - 20, y: end.y })
+  points.push({ x: end.x, y: end.y })
+
+  // 生成三角形箭头
+  points.push({ x: end.x - 5, y: end.y - 3 })
+  points.push({ x: end.x - 5, y: end.y + 3 })
+  points.push({ x: end.x, y: end.y })
+
+  return points.map((i) => `${i.x},${i.y}`).join(' ')
 }

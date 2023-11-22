@@ -1,46 +1,32 @@
 <template>
-  <Tooltip :content="tooltip" :data="getTooltipData">
-    <div class="layout">
-      <div class="content">
-        <TimeScale :scales="scalesState" :scrollLeft="scrollLeft" />
+  <div class="layout">
+    <div class="content">
+      <TimeScale :scales="scalesState" :scrollLeft="scrollLeft" />
 
-        <Chart
-          :drag="!readOnly.noDrag"
-          :newLink="!readOnly.noNewLink"
-          :markers="markersData"
-          :tasks="renderTasks"
-          :links="linksState"
-          :scrollTop="scrollTop"
-          :scrollLeft="scrollLeft"
-          :cellWidth="cellWidth"
-          :cellHeight="cellHeight"
-          :fullWidth="fullWidth"
-          :fullHeight="fullHeight"
-          :selected="selected"
-          :borders="borders"
-          @action="action"
-        />
-      </div>
+      <Chart
+        :drag="!readOnly.noDrag"
+        :newLink="!readOnly.noNewLink"
+        :markers="markersData"
+        :tasks="renderTasks"
+        :links="linksState"
+        :scrollTop="scrollTop"
+        :scrollLeft="scrollLeft"
+        :cellWidth="cellWidth"
+        :cellHeight="cellHeight"
+        :fullWidth="fullWidth"
+        :fullHeight="fullHeight"
+        :selected="selected"
+        :borders="borders"
+        @action="action"
+      />
     </div>
-  </Tooltip>
+  </div>
 </template>
 
 <script setup lang="ts">
-import {
-  markRaw,
-  inject,
-  provide,
-  readonly,
-  getCurrentInstance,
-  computed,
-  ref,
-  toRaw,
-  onMounted,
-  onBeforeUpdate
-} from 'vue'
+import { markRaw, inject, provide, readonly, getCurrentInstance, computed, reactive } from 'vue'
 import Chart from './chart/Chart.vue'
 import TimeScale from './TimeScale.vue'
-import Tooltip from '@/wx/Tooltip.vue'
 import { VueLocalState, Vue3LocalData } from '../state/local.js'
 import en from '../locales/en'
 import locale from '@/wx/locales/en'
@@ -67,6 +53,10 @@ const props = defineProps({
   tooltip: { type: Object, default: null },
   borders: { type: String, default: 'full' }
 })
+
+// 设置provide状态
+provide('tasks', props.tasks)
+
 const instance = getCurrentInstance()
 const emit = defineEmits(['store'])
 let store = new Vue3LocalData(instance)
@@ -76,14 +66,10 @@ let action = () => {}
 store.init(props)
 const stateValues = state.getValues()
 const { scrollTop, from, selected, scrollLeft, details } = stateValues
-console.log(props, 11)
-const tasksState = markRaw(store.state.tasks)
+const tasksState = props.tasks
 const linksState = markRaw(store.state.links)
+console.log(linksState, props.links, 1222)
 // const scalesState = markRaw(store.state.scales)
-
-function getTooltipData(id) {
-  return store.getTask(id)
-}
 
 const scalesState = parseScale(
   props.scales,
