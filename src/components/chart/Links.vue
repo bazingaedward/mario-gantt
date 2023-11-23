@@ -5,12 +5,21 @@
 </template>
 
 <script setup lang="ts">
-import type { GanttLink } from '@/typing'
-import { generateLinkPoints } from '@/utils'
+import { inject } from 'vue'
+import type { DivPosition, GanttLink } from '@/typing'
+import { generateLinkPoints, getLinkEnds } from '@/utils'
 defineProps(['links', 'width', 'height'])
 
 const getLinkPoints = (link: GanttLink) => {
-  return generateLinkPoints({ x: 400, y: 19 }, { x: 100, y: 57 })
+  const positionMap = inject('positionMap', {})
+
+  // 基于link生成起始结束坐标点
+  const { start, end } = getLinkEnds(
+    positionMap[link.source] as DivPosition,
+    positionMap[link.target] as DivPosition,
+    link.type
+  )
+  return generateLinkPoints(start, end)
 }
 </script>
 

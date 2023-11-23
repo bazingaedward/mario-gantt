@@ -54,6 +54,23 @@ const props = defineProps({
   borders: { type: String, default: 'full' }
 })
 
+const positionMap = reactive({
+  1: {
+    $x: 100,
+    $y: 3,
+    $w: 500,
+    $h: 31
+  },
+  2: {
+    $x: 100,
+    $y: 41,
+    $w: 100,
+    $h: 31
+  }
+})
+
+provide('positionMap', positionMap)
+
 // 设置provide状态
 provide('tasks', props.tasks)
 

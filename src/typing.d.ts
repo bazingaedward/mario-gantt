@@ -40,3 +40,10 @@ export interface GanttLink {
   target: number
   type: number
 }
+
+export interface DivPosition {
+  $x: number
+  $y: number
+  $h: number
+  $w: number
+}

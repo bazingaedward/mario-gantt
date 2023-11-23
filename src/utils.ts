@@ -1,6 +1,7 @@
-import type { Point, Scale } from '@/typing'
+import type { DivPosition, Point, Scale } from '@/typing'
 import { TIME_SCALE_ROW_HEIGHT } from './constant'
 import { format, add, isBefore, parse } from 'date-fns'
+import { LinkType } from './enum'
 /**
  * 解析scale列表，生成timescale组件需要的cell数组
  */
@@ -84,4 +85,76 @@ export const generateLinkPoints = (start: Point, end: Point) => {
   points.push({ x: end.x, y: end.y })
 
   return points.map((i) => `${i.x},${i.y}`).join(' ')
+}
+
+/**
+ * 基于link的链接类型返回对应的坐标数据
+ * @param source
+ * @param target
+ * @param type
+ * @returns
+ */
+export const getLinkEnds = (source: DivPosition, target: DivPosition, type: number) => {
+  switch (type) {
+    case LinkType.FinishToStart: {
+      return {
+        start: {
+          x: source.$x + source.$w,
+          y: source.$y + 16
+        },
+        end: {
+          x: target.$x,
+          y: target.$y + 16
+        }
+      }
+    }
+    case LinkType.FinishToFinish: {
+      return {
+        start: {
+          x: source.$x + source.$w,
+          y: source.$y + 16
+        },
+        end: {
+          x: target.$x + target.$w,
+          y: target.$y + 16
+        }
+      }
+    }
+    case LinkType.StartToFinish: {
+      return {
+        start: {
+          x: source.$x,
+          y: source.$y + 16
+        },
+        end: {
+          x: target.$x + target.$w,
+          y: target.$y + 16
+        }
+      }
+    }
+    case LinkType.StartToStart: {
+      return {
+        start: {
+          x: source.$x,
+          y: source.$y + 16
+        },
+        end: {
+          x: target.$x,
+          y: target.$y + 16
+        }
+      }
+    }
+    default: {
+      return {
+        start: {
+          x: source.$x,
+          y: source.$y + 16
+        },
+        end: {
+          x: target.$x,
+          y: target.$y + 16
+        }
+      }
+    }
+  }
 }
