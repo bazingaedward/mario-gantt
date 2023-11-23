@@ -6,13 +6,12 @@
 
 <script setup lang="ts">
 import { inject } from 'vue'
-import type { DivPosition, GanttLink } from '@/typing'
 import { generateLinkPoints, getLinkEnds } from '@/utils'
+import type { DivPosition, GanttLink } from '@/typing'
 defineProps(['links', 'width', 'height'])
+const positionMap = inject('positionMap', {})
 
 const getLinkPoints = (link: GanttLink) => {
-  const positionMap = inject('positionMap', {})
-
   // 基于link生成起始结束坐标点
   const { start, end } = getLinkEnds(
     positionMap[link.source] as DivPosition,

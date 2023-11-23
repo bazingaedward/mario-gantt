@@ -72,10 +72,16 @@ export const locate = (e: any) => {
 export const generateLinkPoints = (start: Point, end: Point) => {
   const points: Point[] = [start]
 
-  // 生成S型路径
   points.push({ x: start.x + 20, y: start.y })
-  points.push({ x: start.x + 20, y: Math.round((start.y + end.y) / 2) })
-  points.push({ x: end.x - 20, y: Math.round((start.y + end.y) / 2) })
+  if (start.x + 20 > end.x - 20) {
+    // 生成S型路径
+    points.push({ x: start.x + 20, y: Math.round((start.y + end.y) / 2) })
+    points.push({ x: end.x - 20, y: Math.round((start.y + end.y) / 2) })
+  } else {
+    // 生成Z字型路径
+    points.push({ x: start.x + 20, y: end.y })
+  }
+
   points.push({ x: end.x - 20, y: end.y })
   points.push({ x: end.x, y: end.y })
 

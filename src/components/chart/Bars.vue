@@ -54,10 +54,9 @@
 import { reactive, computed, ref, inject } from 'vue'
 import { isNil } from 'lodash-es'
 import NewLink from './NewLink.vue'
-import { positionMap } from '@/constant'
 import { locateID, locate } from '@/utils'
 
-// const hello = inject('hello2', 'hello')
+const positionMap = inject('positionMap', {})
 
 const props = defineProps(['tasks', 'drag', 'newLink', 'cellWidth'])
 const emit = defineEmits(['action'])
@@ -115,7 +114,7 @@ function down(node, target, point) {
       mode,
       node,
       x: clientX,
-      dx: 0,
+      dx: 10,
       l: parseInt(node.style.left),
       w: parseInt(node.style.width)
     }
@@ -201,14 +200,7 @@ function move(e, point) {
 
     state.taskMove.start = true
 
-    emit('action', {
-      action: 'move-task',
-      id,
-      obj: {
-        width: parseInt(node.style.width),
-        left: parseInt(node.style.left)
-      }
-    })
+    positionMap[id].$x = parseInt(node.style.left)
   } else {
     const mnode = locate(e)
     if (mnode) {

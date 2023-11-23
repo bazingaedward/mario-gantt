@@ -85,7 +85,6 @@ const stateValues = state.getValues()
 const { scrollTop, from, selected, scrollLeft, details } = stateValues
 const tasksState = props.tasks
 const linksState = markRaw(store.state.links)
-console.log(linksState, props.links, 1222)
 // const scalesState = markRaw(store.state.scales)
 
 const scalesState = parseScale(
