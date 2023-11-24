@@ -18,7 +18,7 @@ const getLinkPoints = (link: GanttLink) => {
     positionMap[link.target] as DivPosition,
     link.type
   )
-  return generateLinkPoints(start, end)
+  return generateLinkPoints(start, end, link.type)
 }
 </script>
 

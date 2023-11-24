@@ -32,6 +32,7 @@ import en from '../locales/en'
 import locale from '@/wx/locales/en'
 import { LocaleContext } from '@/wx/locale'
 import { parseScale } from '@/utils'
+import type { ActionPayload } from '@/typing'
 
 const check = inject(LocaleContext, null)
 if (!check) provide(LocaleContext, readonly(locale().extend(en)))
@@ -58,7 +59,7 @@ const positionMap = reactive({
   1: {
     $x: 100,
     $y: 3,
-    $w: 500,
+    $w: 300,
     $h: 31
   },
   2: {
@@ -75,16 +76,18 @@ provide('positionMap', positionMap)
 provide('tasks', props.tasks)
 
 const instance = getCurrentInstance()
-const emit = defineEmits(['store'])
+const emit = defineEmits(['store', 'action'])
 let store = new Vue3LocalData(instance)
 let state = new VueLocalState(instance)
-let action = () => {}
+let action = (payload: ActionPayload) => {
+  emit('action', payload)
+}
 
-store.init(props)
+// store.init(props)
 const stateValues = state.getValues()
 const { scrollTop, from, selected, scrollLeft, details } = stateValues
 const tasksState = props.tasks
-const linksState = markRaw(store.state.links)
+const linksState = props.links
 // const scalesState = markRaw(store.state.scales)
 
 const scalesState = parseScale(

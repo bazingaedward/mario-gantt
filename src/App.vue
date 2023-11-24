@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { ref, toRaw } from 'vue'
 import { Gantt, DefaultTheme, MaterialTheme } from './tt'
+import type { ActionPayload } from './typing'
 
 const scales = [{ unit: 'day', step: 1, format: 'd' }]
 
@@ -36,20 +38,22 @@ const tasks = [
   // }
 ]
 
-const links = [{ source: 2, target: 1, type: 0 }]
-const links2 = [{ source: 1, target: 2, type: 0 }]
+const links = ref([{ source: 1, target: 2, type: 0 }])
+
+const onAction = (payload: ActionPayload) => {
+  const { action, obj } = payload
+  switch (action) {
+    case 'add-link': {
+      if (obj) links.value.push(obj)
+    }
+  }
+}
 </script>
 
 <template>
-  <!-- <el-table :data="tableData" style="width: 100%">
-    <el-table-column prop="date" label="Date" width="180" />
-    <el-table-column prop="name" label="Name" width="180" />
-    <el-table-column prop="address" label="Address" />
-  </el-table> -->
-
   <div style="width: 1256px; height: 1000px">
     <MaterialTheme>
-      <Gantt :scales="scales" :columns="columns" :tasks="tasks" :links="links2" />
+      <Gantt :scales="scales" :columns="columns" :tasks="tasks" :links="links" @action="onAction" />
     </MaterialTheme>
   </div>
 </template>

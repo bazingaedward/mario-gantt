@@ -144,7 +144,7 @@ function mouseup(e) {
     state.start = state.end = null
 
     const targetNode = document.elementFromPoint(clientX, clientY)
-    const node = locate(targetNode)
+    const node = locate({ target: targetNode })
     if (!node) return
 
     const css = node.classList
@@ -167,7 +167,7 @@ function mouseup(e) {
     if (props.newLink) {
       emit('action', {
         action: 'add-link',
-        obj: { source, target, type }
+        obj: { source: parseInt(source), target: parseInt(target), type }
       })
     }
     endDrag()

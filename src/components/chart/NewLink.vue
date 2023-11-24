@@ -30,7 +30,7 @@ const link = computed(() => {
 
 <style scoped>
 .new {
-  position: absolute;
+  position: relative;
   pointer-events: none;
 }
 

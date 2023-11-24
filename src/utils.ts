@@ -1,5 +1,5 @@
 import type { DivPosition, Point, Scale } from '@/typing'
-import { TIME_SCALE_ROW_HEIGHT } from './constant'
+import { LINK_OFFSET, LINK_SVG_TRIANGLE, TIME_SCALE_ROW_HEIGHT } from './constant'
 import { format, add, isBefore, parse } from 'date-fns'
 import { LinkType } from './enum'
 /**
@@ -65,29 +65,48 @@ export const locate = (e: any) => {
 
 /**
  * 基于起始结束点生成svg的polygon 点路径
- * @param start
- * @param end
+ * @param start 起始点
+ * @param end 结束点
+ * @param type 首尾连接类型
  * @returns
  */
-export const generateLinkPoints = (start: Point, end: Point) => {
+export const generateLinkPoints = (start: Point, end: Point, type = 0) => {
   const points: Point[] = [start]
 
-  points.push({ x: start.x + 20, y: start.y })
-  if (start.x + 20 > end.x - 20) {
-    // 生成S型路径
-    points.push({ x: start.x + 20, y: Math.round((start.y + end.y) / 2) })
-    points.push({ x: end.x - 20, y: Math.round((start.y + end.y) / 2) })
-  } else {
-    // 生成Z字型路径
-    points.push({ x: start.x + 20, y: end.y })
+  const isRightTriangle = [0, 1].includes(type)
+  const triangleOffset = {
+    x: (isRightTriangle ? 1 : -1) * LINK_SVG_TRIANGLE.offsetX,
+    y: (isRightTriangle ? 1 : -1) * LINK_SVG_TRIANGLE.offsetY
   }
 
-  points.push({ x: end.x - 20, y: end.y })
-  points.push({ x: end.x, y: end.y })
+  if (type === LinkType.FinishToStart) {
+    if (start.x + LINK_OFFSET > end.x - LINK_OFFSET) {
+      // 生成S型路径
+      points.push({ x: start.x + LINK_OFFSET, y: start.y })
+      points.push({ x: start.x + LINK_OFFSET, y: Math.round((start.y + end.y) / 2) })
+      points.push({ x: end.x - LINK_OFFSET, y: Math.round((start.y + end.y) / 2) })
+    } else {
+      // 生成Z字型路径
+      points.push({ x: start.x + LINK_OFFSET, y: end.y })
+    }
+
+    points.push({ x: end.x - LINK_OFFSET, y: end.y })
+  }
+
+  if (type === LinkType.FinishToFinish) {
+    if (start.x > end.x) {
+      points.push({ x: start.x + LINK_OFFSET, y: start.y })
+      points.push({ x: start.x + LINK_OFFSET, y: end.y })
+    } else {
+      points.push({ x: end.x + LINK_OFFSET, y: start.y })
+      points.push({ x: end.x + LINK_OFFSET, y: end.y })
+    }
+  }
 
   // 生成三角形箭头
-  points.push({ x: end.x - 5, y: end.y - 3 })
-  points.push({ x: end.x - 5, y: end.y + 3 })
+  points.push({ x: end.x, y: end.y })
+  points.push({ x: end.x - triangleOffset.x, y: end.y - triangleOffset.y })
+  points.push({ x: end.x - triangleOffset.x, y: end.y + triangleOffset.y })
   points.push({ x: end.x, y: end.y })
 
   return points.map((i) => `${i.x},${i.y}`).join(' ')

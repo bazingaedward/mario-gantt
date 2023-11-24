@@ -47,3 +47,9 @@ export interface DivPosition {
   $h: number
   $w: number
 }
+
+export interface ActionPayload {
+  action: string
+  obj?: GanttLink
+  [key]: any
+}
