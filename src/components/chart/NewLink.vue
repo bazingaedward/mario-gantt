@@ -5,26 +5,32 @@
     :width="link.width"
     :height="link.height"
   >
-    <polyline class="line" :points="link.p" />
+    <polyline class="line" :points="link.p" stroke-dasharray="4,2" />
   </svg>
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
-import { placeLink } from '@dhtmlx/trial-lib-gantt'
+import { computed } from 'vue'
 
 const props = defineProps(['layer', 'start', 'end'])
 
 const link = computed(() => {
   const box = props.layer.getBoundingClientRect()
-  const link = placeLink(box, props.start, props.end)
-  return link
+  return {
+    height: box.height,
+    width: box.width,
+    top: 0,
+    left: 0,
+    p: `${props.start.x - box.left},${props.start.y - box.top} ${props.end.x - box.left},${
+      props.end.y - box.top
+    }`
+  }
 })
 </script>
 
 <style scoped>
 .new {
-  position: relative;
+  position: absolute;
   pointer-events: none;
 }
 

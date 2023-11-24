@@ -3,12 +3,10 @@
     class="bars"
     ref="layer"
     :style="lineHeight"
-    @contextmenu="contextmenu"
     @mousedown="mousedown"
     @mouseup="mouseup"
     @mousemove="mousemove"
     @click="click"
-    @dblclick="dblclick"
     @dragstart="() => false"
   >
     <div
@@ -43,7 +41,7 @@
 
     <NewLink
       v-if="state.start && state.end && newLink"
-      :layer="$refs.layer"
+      :layer="layer"
       :start="state.start"
       :end="state.end"
     />
@@ -75,38 +73,22 @@ const state = reactive({
 function mousedown(e) {
   const node = locate(e)
   if (!node) return
-  down(node, e.target, e)
-}
-
-function mousemove(e) {
-  move(e, e)
-}
-
-function mouseup(e) {
-  up(e)
-}
-
-function contextmenu(e) {
-  if (!state.touched || !state.touchTimer) {
-    e.preventDefault()
-    return false
-  }
-}
-
-function down(node, target, point) {
+  const target = e.target
+  const point = e
   const { clientX, clientY } = point
   const id = node.dataset.id
   const css = target.classList
 
   if (css.contains('link')) {
+    // 边上点的点击
     state.start = {
       id,
       start: css.contains('left'),
       x: clientX,
       y: clientY
     }
-    startDrag()
   } else {
+    // bar move
     let mode = getMoveMode(node, point) || 'move'
 
     state.taskMove = {
@@ -114,15 +96,46 @@ function down(node, target, point) {
       mode,
       node,
       x: clientX,
-      dx: 10,
+      dx: 0,
       l: parseInt(node.style.left),
       w: parseInt(node.style.width)
     }
-    startDrag()
+  }
+  startDrag()
+}
+
+function mousemove(e) {
+  const point = e
+  const { clientX, clientY } = point
+  if (state.start) {
+    state.end = { x: clientX, y: clientY }
+  } else if (state.taskMove && props.drag) {
+    const { node, mode, l, w, x, id } = state.taskMove
+    const dx = (state.taskMove.dx = clientX - x)
+    if (!state.start && Math.abs(dx) < 20) return
+    if (mode === 'start') {
+      node.style.left = `${l + dx}px`
+      node.style.width = `${w - dx}px`
+    } else if (mode === 'end') {
+      node.style.width = `${w + dx}px`
+    } else if (mode === 'move') {
+      node.style.left = `${l + dx}px`
+    }
+
+    state.taskMove.start = true
+
+    positionMap[id].$x = parseInt(node.style.left)
+  } else {
+    const mnode = locate(e)
+    if (mnode) {
+      const mode = getMoveMode(mnode, point)
+      mnode.style.cursor = mode ? 'col-resize' : 'pointer'
+    }
   }
 }
 
-function up(point) {
+function mouseup(e) {
+  const point = e
   if (state.start) {
     const { clientX, clientY } = point
 
@@ -180,36 +193,6 @@ function up(point) {
   }
 }
 
-function move(e, point) {
-  const { clientX, clientY } = point
-  if (state.start) {
-    state.end = { x: clientX, y: clientY }
-  } else if (state.taskMove && props.drag) {
-    const { node, mode, l, w, x, id } = state.taskMove
-    const dx = (state.taskMove.dx = clientX - x)
-    if (!state.start && Math.abs(dx) < 20) return
-
-    if (mode === 'start') {
-      node.style.left = `${l + dx}px`
-      node.style.width = `${w - dx}px`
-    } else if (mode === 'end') {
-      node.style.width = `${w + dx}px`
-    } else if (mode === 'move') {
-      node.style.left = `${l + dx}px`
-    }
-
-    state.taskMove.start = true
-
-    positionMap[id].$x = parseInt(node.style.left)
-  } else {
-    const mnode = locate(e)
-    if (mnode) {
-      const mode = getMoveMode(mnode, point)
-      mnode.style.cursor = mode ? 'col-resize' : 'pointer'
-    }
-  }
-}
-
 function click(e) {
   if (state.ignoreNextClick) {
     state.ignoreNextClick = true
@@ -220,14 +203,6 @@ function click(e) {
 
   if (id) {
     emit('action', { action: 'select-task', id })
-  }
-}
-
-function dblclick(e) {
-  const id = locateID(e.target)
-
-  if (id) {
-    emit('action', { action: 'show-details', id })
   }
 }
 
@@ -261,10 +236,6 @@ function startDrag() {
 function endDrag() {
   document.body.style.userSelect = ''
 }
-
-const addLink = computed(() => {
-  return !!state.layer && !!state.start && !!state.end
-})
 
 const lineHeight = computed(() => {
   return `line-height: ${props.tasks.length ? props.tasks[0].$h : 0}px`
