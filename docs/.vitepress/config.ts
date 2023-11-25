@@ -4,7 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'Mario Gantt',
   description: 'A VitePress Site',
-  base: '/',
+  base: '/mario-gantt/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
