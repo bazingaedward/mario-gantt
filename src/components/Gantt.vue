@@ -8,7 +8,7 @@
         :newLink="!readOnly.noNewLink"
         :markers="markersData"
         :tasks="renderTasks"
-        :links="linksState"
+        :links="links"
         :scrollTop="scrollTop"
         :scrollLeft="scrollLeft"
         :cellWidth="cellWidth"
@@ -87,7 +87,6 @@ let action = (payload: ActionPayload) => {
 const stateValues = state.getValues()
 const { scrollTop, from, selected, scrollLeft, details } = stateValues
 const tasksState = props.tasks
-const linksState = props.links
 // const scalesState = markRaw(store.state.scales)
 
 const scalesState = parseScale(
