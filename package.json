@@ -24,7 +24,8 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "commit": "cz"
   },
   "dependencies": {
     "@dhtmlx/trial-lib-gantt": "^1.1.2",
@@ -51,6 +52,7 @@
     "@vue/tsconfig": "^0.4.0",
     "commitizen": "^4.3.0",
     "cypress": "^13.3.1",
+    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.49.0",
     "eslint-plugin-cypress": "^2.15.1",
     "eslint-plugin-vue": "^9.17.0",
