@@ -28,4 +28,4 @@ coverage
 *.sw?
 
 
-.vitepress
+docs/.vitepress/cache
