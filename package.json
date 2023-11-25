@@ -25,7 +25,7 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
-    "commit": "git add . && git-cz"
+    "commit": "git add . && pnpx git-cz"
   },
   "dependencies": {
     "@dhtmlx/trial-lib-gantt": "^1.1.2",
