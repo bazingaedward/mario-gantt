@@ -93,6 +93,18 @@ export const generateLinkPoints = (start: Point, end: Point, type = 0) => {
     points.push({ x: end.x - LINK_OFFSET, y: end.y })
   }
 
+  if (type === LinkType.StartToStart) {
+    if (start.x > end.x) {
+      // 生成Z字型路径
+      points.push({ x: end.x - LINK_OFFSET, y: start.y })
+      points.push({ x: end.x - LINK_OFFSET, y: end.y })
+    } else {
+      // 生成S型路径
+      points.push({ x: start.x - LINK_OFFSET, y: start.y })
+      points.push({ x: start.x - LINK_OFFSET, y: end.y })
+    }
+  }
+
   if (type === LinkType.FinishToFinish) {
     if (start.x > end.x) {
       points.push({ x: start.x + LINK_OFFSET, y: start.y })
@@ -101,6 +113,21 @@ export const generateLinkPoints = (start: Point, end: Point, type = 0) => {
       points.push({ x: end.x + LINK_OFFSET, y: start.y })
       points.push({ x: end.x + LINK_OFFSET, y: end.y })
     }
+  }
+
+  if (type === LinkType.StartToFinish) {
+    if (start.x - LINK_OFFSET < end.x + LINK_OFFSET) {
+      // 生成S型路径
+      points.push({ x: start.x - LINK_OFFSET, y: start.y })
+      points.push({ x: start.x - LINK_OFFSET, y: Math.round((start.y + end.y) / 2) })
+      points.push({ x: end.x + LINK_OFFSET, y: Math.round((start.y + end.y) / 2) })
+    } else {
+      // 生成Z字型路径
+      points.push({ x: start.x - LINK_OFFSET, y: start.y })
+      points.push({ x: start.x - LINK_OFFSET, y: end.y })
+    }
+
+    points.push({ x: end.x + LINK_OFFSET, y: end.y })
   }
 
   // 生成三角形箭头
