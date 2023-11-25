@@ -85,12 +85,12 @@ export const generateLinkPoints = (start: Point, end: Point, type = 0) => {
       points.push({ x: start.x + LINK_OFFSET, y: start.y })
       points.push({ x: start.x + LINK_OFFSET, y: Math.round((start.y + end.y) / 2) })
       points.push({ x: end.x - LINK_OFFSET, y: Math.round((start.y + end.y) / 2) })
+      points.push({ x: end.x - LINK_OFFSET, y: end.y })
     } else {
       // 生成Z字型路径
+      points.push({ x: start.x + LINK_OFFSET, y: start.y })
       points.push({ x: start.x + LINK_OFFSET, y: end.y })
     }
-
-    points.push({ x: end.x - LINK_OFFSET, y: end.y })
   }
 
   if (type === LinkType.StartToStart) {

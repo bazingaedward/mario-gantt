@@ -131,6 +131,7 @@ const lineHeight = computed(() => {
   position: relative;
   z-index: 2;
   display: inline;
+  line-height: 30px;
 }
 
 .textRight,
