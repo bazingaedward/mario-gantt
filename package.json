@@ -14,11 +14,6 @@
       "require": "./dist/mario-gantt.umd.js"
     }
   },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-customizable"
-    }
-  },
   "scripts": {
     "dev": "vite",
     "build": "vite build --config src/vite.build.ts",
