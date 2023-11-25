@@ -1,6 +1,6 @@
 # mario-gantt
 
-## Features
+## Feature
 
 - 充分利用vue3响应式设计
 
