@@ -2,6 +2,78 @@ import type { DivPosition, Point, Scale } from '@/typing'
 import { LINK_OFFSET, LINK_SVG_TRIANGLE, TIME_SCALE_ROW_HEIGHT } from './constant'
 import { format, add, isBefore, parse } from 'date-fns'
 import { LinkType } from './enum'
+
+/**
+ * 基于元素的宽高绘制背景网格
+ * @param width
+ * @param height
+ * @returns
+ */
+export interface DrawGridOptions {
+  /**
+   * 单元格宽度,单位px
+   */
+  cellWidth: number
+  /**
+   * 单元格高度,单位px
+   */
+  cellHeight: number
+  /**
+   * 边框颜色，eg：'#ebebeb'
+   */
+  borderColor?: string
+  /**
+   * 水平的网格点
+   */
+  rowGridNum?: number
+  /**
+   * 垂直的网格点
+   */
+  colGridNum?: number
+}
+export function drawGridBackgroundImage({
+  cellWidth,
+  cellHeight,
+  rowGridNum = 30,
+  colGridNum = 10,
+  borderColor = '#ebebeb'
+}: DrawGridOptions) {
+  // 创建一个新的画布，用于绘制 DOM 元素
+  const tempCanvas = document.createElement('canvas')
+  tempCanvas.width = cellWidth * rowGridNum
+  tempCanvas.height = cellHeight * colGridNum
+
+  const ctx = tempCanvas.getContext('2d') as CanvasRenderingContext2D
+
+  // 设置网格线的样式
+  ctx.strokeStyle = borderColor
+  ctx.lineWidth = 1
+
+  // 绘制水平线
+  for (let y = 0; y <= tempCanvas.height; y += cellHeight) {
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(tempCanvas.width, y)
+    ctx.stroke()
+  }
+
+  // 绘制垂直线
+  for (let x = 0; x <= tempCanvas.width; x += cellWidth) {
+    ctx.beginPath()
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, tempCanvas.height)
+    ctx.stroke()
+  }
+
+  // 设置画布尺寸
+
+  // 在画布上绘制 DOM 元素
+  // tempContext.drawSvg(element.outerHTML, 0, 0, width, height);
+
+  // 将绘制结果转换为 base64 图片
+  return tempCanvas.toDataURL('image/png')
+}
+
 /**
  * 解析scale列表，生成timescale组件需要的cell数组
  */

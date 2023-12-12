@@ -60,6 +60,7 @@ const props = defineProps([
   'selected',
   'borders'
 ])
+console.log(props, 112)
 
 const emit = defineEmits(['action'])
 
