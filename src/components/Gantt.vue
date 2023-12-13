@@ -8,7 +8,6 @@
         :newLink="!readOnly.noNewLink"
         :markers="markersData"
         :tasks="renderTasks"
-        :links="links"
         :scrollTop="scrollTop"
         :scrollLeft="scrollLeft"
         :cellWidth="cellWidth"
@@ -17,22 +16,33 @@
         :fullHeight="fullHeight"
         :selected="selected"
         :borders="borders"
-        @action="action"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { markRaw, inject, provide, readonly, getCurrentInstance, computed, reactive } from 'vue'
+import {
+  markRaw,
+  inject,
+  provide,
+  readonly,
+  getCurrentInstance,
+  computed,
+  reactive,
+  toRaw,
+  ref,
+  watch,
+  toValue
+} from 'vue'
 import Chart from './chart/Chart.vue'
 import TimeScale from './TimeScale.vue'
-import { VueLocalState, Vue3LocalData } from '../state/local.js'
 import en from '../locales/en'
 import locale from '@/wx/locales/en'
 import { LocaleContext } from '@/wx/locale'
 import { parseScale } from '@/utils'
 import type { ActionPayload } from '@/typing'
+import { useGanttStore } from '@/stores/gantt'
 
 const check = inject(LocaleContext, null)
 if (!check) provide(LocaleContext, readonly(locale().extend(en)))
@@ -44,8 +54,8 @@ const props = defineProps({
   links: { type: Array, default: () => [] },
   scales: { type: Array, default: () => [] },
   columns: { type: Array, default: () => [] },
-  start: { type: Date, default: null },
-  end: { type: Date, default: null },
+  // start: { type: Date, default: null },
+  // end: { type: Date, default: null },
   cellWidth: { type: Number, default: 100 },
   cellHeight: { type: Number, default: 38 },
   scaleHeight: { type: Number, default: 30 },
@@ -55,45 +65,33 @@ const props = defineProps({
   borders: { type: String, default: 'full' }
 })
 
-const positionMap = reactive({
-  1: {
-    $x: 100,
-    $y: 3,
-    $w: 300,
-    $h: 31
-  },
-  2: {
-    $x: 100,
-    $y: 41,
-    $w: 100,
-    $h: 31
-  }
+const start = new Date('2020-11-05')
+const end = new Date('2020-12-06')
+
+const { positionMap, tasks, updateTaskProgress } = useGanttStore({
+  cellWidth: props.cellWidth,
+  cellHeight: props.cellHeight,
+  start,
+  end
+})
+// 提供bar位置的map表
+provide('positionMap', toValue(positionMap))
+// 设置provide状态
+provide('tasks', tasks)
+// 提供links的数组
+provide('links', props.links)
+provide('actions', {
+  updateTaskProgress
 })
 
-provide('positionMap', positionMap)
+// TODO: 定义组件的emit事件
+// const emit = defineEmits(['action'])
 
-// 设置provide状态
-provide('tasks', props.tasks)
+const scrollTop = 0,
+  scrollLeft = 0,
+  selected = null
 
-const instance = getCurrentInstance()
-const emit = defineEmits(['store', 'action'])
-let store = new Vue3LocalData(instance)
-let state = new VueLocalState(instance)
-let action = (payload: ActionPayload) => {
-  emit('action', payload)
-}
-
-// store.init(props)
-const stateValues = state.getValues()
-const { scrollTop, from, selected, scrollLeft, details } = stateValues
-const tasksState = props.tasks
-// const scalesState = markRaw(store.state.scales)
-
-const scalesState = parseScale(
-  props.scales,
-  new Date('2020-11-05T00:00:00.000Z'),
-  new Date('2020-12-06T00:00:00.000Z')
-)
+const scalesState = parseScale(props.scales, new Date(start), new Date(end))
 
 const readOnly = computed(() => {
   const { readonly } = props
@@ -111,11 +109,11 @@ const fullWidth = computed(() => {
 })
 
 const fullHeight = computed(() => {
-  return tasksState.length * props.cellHeight
+  return tasks.value.length * props.cellHeight
 })
 
 const renderTasks = computed(() => {
-  return tasksState.slice(stateValues.dataStart, 2)
+  return toValue(tasks)
 })
 
 const markersData = computed(() => {

@@ -16,7 +16,7 @@
 
       <div v-if="selected" class="selection" :style="selectStyle"></div>
 
-      <Links :links="links" :width="fullWidth" :height="fullHeight" />
+      <Links :width="fullWidth" :height="fullHeight" />
 
       <Bars
         :tasks="tasks"
@@ -50,7 +50,6 @@ const props = defineProps([
   'newLink',
   'markers',
   'tasks',
-  'links',
   'scrollTop',
   'scrollLeft',
   'cellWidth',
@@ -60,7 +59,6 @@ const props = defineProps([
   'selected',
   'borders'
 ])
-console.log(props, 112)
 
 const emit = defineEmits(['action'])
 

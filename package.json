@@ -33,6 +33,7 @@
   "dependencies": {
     "@dhtmlx/trial-lib-gantt": "^1.1.2",
     "@dhtmlx/trial-vue-gantt": "^1.1.2",
+    "@vueuse/core": "^10.7.0",
     "date-fns": "^2.30.0",
     "element-plus": "^2.4.1",
     "lodash": "^4.17.21",
@@ -61,6 +62,7 @@
     "eslint-plugin-cypress": "^2.15.1",
     "eslint-plugin-vue": "^9.17.0",
     "jsdom": "^22.1.0",
+    "less": "^4.2.0",
     "npm-run-all2": "^6.1.1",
     "path": "^0.12.7",
     "prettier": "^3.0.3",

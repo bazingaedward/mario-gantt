@@ -88,7 +88,7 @@ export const parseScale = (scales: Scale[], startDate: Date, endDate: Date, opti
     // TODO: 这里需要动态计算不同timescale坐标轴的宽度和相关关系，先从俭，只显示单行数据
     while (isBefore(currentDate, endDate)) {
       // timeSeries.push(format(currentDate, scale?.format || 'YYYY-MM-DD'))
-      timeSeries.push(format(currentDate, 'MM-dd'))
+      timeSeries.push(format(currentDate, 'dd MMM'))
 
       // 添加时间间隔
       // currentDate = add(currentDate, { [`${scale.unit}s`]: scale.step })

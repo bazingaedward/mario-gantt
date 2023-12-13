@@ -53,3 +53,13 @@ export interface ActionPayload {
   obj?: GanttLink
   [key]: any
 }
+
+export interface TaskItem {
+  id: number
+  parent?: number
+  text: string
+  progress: number
+  duration: number
+  start_date: Date
+  end_date?: Date
+}

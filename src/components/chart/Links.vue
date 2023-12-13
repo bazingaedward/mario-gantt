@@ -8,8 +8,9 @@
 import { inject } from 'vue'
 import { generateLinkPoints, getLinkEnds } from '@/utils'
 import type { DivPosition, GanttLink } from '@/typing'
-defineProps(['links', 'width', 'height'])
+defineProps(['width', 'height'])
 const positionMap = inject('positionMap', {})
+const links = inject('links', [])
 
 const getLinkPoints = (link: GanttLink) => {
   // 基于link生成起始结束坐标点

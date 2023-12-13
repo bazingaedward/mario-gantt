@@ -17,6 +17,7 @@
       :data-tooltip-id="task.id"
     >
       <div class="link left"></div>
+      <div class="control left"></div>
 
       <template v-if="task.type !== 'milestone'">
         <div v-if="task.progress" class="progress-wrapper">
@@ -34,6 +35,8 @@
         <div class="textRight">{{ task.text || task.textRight }}</div>
       </template>
 
+      <div class="gantt_task_progress_drag" :style="taskProgressStyle(task)"></div>
+      <div class="control right"></div>
       <div class="link right"></div>
     </div>
 
@@ -74,12 +77,19 @@ function taskStyle(task) {
   return `left:${attr.$x}px;top:${attr.$y}px;width:${attr.$w}px;height:${attr.$h}px`
 }
 
+function taskProgressStyle(task) {
+  const attr = positionMap[task.id]
+  if (isNil(attr)) return ''
+
+  return `left:${attr.$w * (task.progress / 100)}px`
+}
+
 const lineHeight = computed(() => {
   return `line-height: ${props.tasks.length ? props.tasks[0].$h : 0}px`
 })
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .bars {
   position: absolute;
   top: 0;
@@ -98,6 +108,42 @@ const lineHeight = computed(() => {
   text-align: center;
   cursor: pointer;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+
+  .control {
+    width: 20px;
+    height: 38px;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+
+    &.left {
+      left: 0;
+
+      &:hover {
+        cursor: w-resize;
+      }
+    }
+
+    &.right {
+      right: 0;
+      &:hover {
+        cursor: e-resize;
+      }
+    }
+  }
+
+  .gantt_task_progress_drag {
+    bottom: -4px;
+    height: 10px;
+    margin-left: -8px;
+    width: 16px;
+    background-position: bottom;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAYAAAB24g05AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MkY3Rjk0RUVDMkYzMTFFMkI1OThEQTA3ODU0OTkzMEEiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MkY3Rjk0RUZDMkYzMTFFMkI1OThEQTA3ODU0OTkzMEEiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDoyRjdGOTRFQ0MyRjMxMUUyQjU5OERBMDc4NTQ5OTMwQSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDoyRjdGOTRFREMyRjMxMUUyQjU5OERBMDc4NTQ5OTMwQSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PobPBzIAAADkSURBVHjaYpk2bRoDDsAExL1QdjEQ/8OmiAWHZk4gXqymqhQM4ty6fU8OSMUA8XdiDBAB4k0a6iqWRga6EKcwMQXduHlnL5DpB8Rv0J2JDFSA+JiOtgZcMwiA2CAxkBxUDVYDLEAKgIpV9XQ0MZwFEgPJAZnHoWpRDAgC4n2W5saiQKfjClQGkBxQDciL+6B6wAbkA/EqJwdrTkUFOQZCAKQGpBbIXA3SCzJggo+XK7OEuBgDsQCkFqgHrBfsBT5eHgZSAUwP2IBfv36TbABMDygdtK1Zv6UESLORaAbIhG6AAAMAKN8wE24DXWcAAAAASUVORK5CYII=);
+    background-repeat: no-repeat;
+    z-index: 1;
+    position: absolute;
+    cursor: ew-resize;
+  }
 }
 
 .bar.touch {
@@ -196,11 +242,11 @@ const lineHeight = computed(() => {
 }
 
 .link.left {
-  left: -8px;
+  left: -20px;
 }
 
 .link.right {
-  right: -8px;
+  right: -20px;
 }
 
 .bar:hover .link,

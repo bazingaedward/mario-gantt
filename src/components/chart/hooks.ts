@@ -1,11 +1,13 @@
 import { locate } from '@/utils'
-import { inject, reactive } from 'vue'
+import { inject, reactive, toValue } from 'vue'
 
 export const useBarMouseEvent = (
   cellWidth: number,
   onAddLink: (e: { id: number; position: number }) => void
 ) => {
   const positionMap = inject('positionMap', {})
+  const tasks = inject('tasks', [])
+  const { updateTaskProgress } = inject('actions', {})
   const state = reactive({
     taskMove: null,
     layer: null,
@@ -13,20 +15,21 @@ export const useBarMouseEvent = (
     end: null,
     ignoreNextClick: false,
     touched: null,
-    touchTimer: null
+    touchTimer: null,
+    progressMove: null
   })
 
-  //   function getMoveMode(node, e) {
-  //     if (getTask(node.dataset.id).type === 'milestone') return ''
+  function getMoveMode(node, e) {
+    // if (getTask(node.dataset.id).type === 'milestone') return ''
 
-  //     const rect = node.getBoundingClientRect()
-  //     const p = (e.clientX - rect.left) / rect.width
-  //     let delta = 0.2 / (rect.width > 200 ? rect.width / 200 : 1)
+    const rect = node.getBoundingClientRect()
+    const p = (e.clientX - rect.left) / rect.width
+    let delta = 0.2 / (rect.width > 200 ? rect.width / 200 : 1)
 
-  //     if (p < delta) return 'start'
-  //     if (p > 1 - delta) return 'end'
-  //     return ''
-  //   }
+    if (p < delta) return 'start'
+    if (p > 1 - delta) return 'end'
+    return 'move'
+  }
 
   function mousedown(e: MouseEvent) {
     const node = locate(e)
@@ -44,9 +47,23 @@ export const useBarMouseEvent = (
         x: clientX,
         y: clientY
       }
+    } else if (css.contains('gantt_task_progress_drag')) {
+      // progress调整
+      const task = tasks.value.find((i) => i.id == id)
+
+      state.progressMove = {
+        id,
+        x: clientX,
+        l: parseInt(e.target.style.left),
+        node: e.target,
+        progress: task?.progress
+      }
     } else {
       // bar move
-      let mode = 'move'
+      // mode=start: 调整左侧位置
+      // mode=end: 调整右侧位置
+      // mode=move: 调整bar位置
+      let mode = getMoveMode(node, e)
 
       state.taskMove = {
         id,
@@ -74,16 +91,28 @@ export const useBarMouseEvent = (
       if (mode === 'start') {
         node.style.left = `${l + dx}px`
         node.style.width = `${w - dx}px`
+        positionMap[id].$x = l + dx
+        positionMap[id].$w = w - dx
       } else if (mode === 'end') {
         node.style.width = `${w + dx}px`
+        positionMap[id].$w = w + dx
       } else if (mode === 'move') {
         node.style.left = `${l + dx}px`
+        positionMap[id].$x = l + dx
       }
 
-      state.taskMove.start = true
+      // state.taskMove.start = true
 
-      positionMap[id].$x = parseInt(node.style.left)
-    } else {
+      // 同步位置更新：links
+    } else if (state.progressMove) {
+      const { id, x, l, node, progress } = state.progressMove
+      const dx = point.clientX - x
+      // 修改progress 三角node节点的left style
+      node.style.left = `${l + dx}px`
+
+      const diffPercent = Math.round((dx / positionMap[id].$w) * 100)
+      updateTaskProgress(id, progress + diffPercent)
+      // 更新task的progress
       //   const mnode = locate(e)
       //   if (mnode) {
       //     const mode = getMoveMode(mnode, point)
@@ -145,6 +174,8 @@ export const useBarMouseEvent = (
       //     obj: { mode, time }
       //   })
       state.ignoreNextClck = true
+    } else if (state.progressMove) {
+      state.progressMove = null
     }
   }
 
