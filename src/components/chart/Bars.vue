@@ -6,6 +6,7 @@
     @mousedown="mousedown"
     @mouseup="mouseup"
     @mousemove="mousemove"
+    @mouseenter="mouseEnter"
   >
     <div
       v-for="task in tasks"
@@ -68,7 +69,10 @@ const onAddLink = (obj: Object) => {
     obj
   })
 }
-const { mousedown, mousemove, mouseup, state } = useBarMouseEvent(props.cellWidth, onAddLink)
+const { mousedown, mousemove, mouseup, mouseEnter, state } = useBarMouseEvent(
+  props.cellWidth,
+  onAddLink
+)
 
 function taskStyle(task) {
   const attr = positionMap[task.id]

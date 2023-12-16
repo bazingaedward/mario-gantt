@@ -179,6 +179,10 @@ export const useBarMouseEvent = (
     }
   }
 
+  function mouseEnter(e: MouseEvent) {
+    console.log(e, 11)
+  }
+
   //   function click(e) {
   //     if (state.ignoreNextClick) {
   //       state.ignoreNextClick = true
@@ -196,6 +200,7 @@ export const useBarMouseEvent = (
     mousedown,
     mousemove,
     mouseup,
+    mouseEnter,
     state
   }
 }

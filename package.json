@@ -33,6 +33,7 @@
   "dependencies": {
     "@dhtmlx/trial-lib-gantt": "^1.1.2",
     "@dhtmlx/trial-vue-gantt": "^1.1.2",
+    "@popperjs/core": "^2.11.8",
     "@vueuse/core": "^10.7.0",
     "date-fns": "^2.30.0",
     "element-plus": "^2.4.1",
