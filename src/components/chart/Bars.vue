@@ -16,6 +16,8 @@
       :data-id="task.id"
       :data-type="task.type"
       :data-tooltip-id="task.id"
+      @mouseover="(e) => onDomHover(task, e)"
+      @mouseleave="onDomLeave"
     >
       <div class="link left"></div>
       <div class="control left"></div>
@@ -48,20 +50,25 @@
       :end="state.end"
     />
   </div>
+  <div id="tooltip" class="tooltip-dom">{{ tooltipInfo?.id }}</div>
 </template>
 
 <script setup lang="ts">
 import { reactive, computed, ref, inject } from 'vue'
-import { isNil } from 'lodash-es'
+import { debounce, isNil } from 'lodash-es'
 import NewLink from './NewLink.vue'
 import { locateID, locate } from '@/utils'
 import { useBarMouseEvent } from './hooks'
+import { createPopper } from '@popperjs/core'
+import type { TaskItem } from '@/typing'
 
 const positionMap = inject('positionMap', {})
 const props = defineProps(['tasks', 'drag', 'newLink', 'cellWidth'])
 const emit = defineEmits(['action'])
 
 const layer = ref(null)
+const test = ref(null)
+const popperInstance = ref(null)
 
 const onAddLink = (obj: Object) => {
   emit('action', {
@@ -71,8 +78,42 @@ const onAddLink = (obj: Object) => {
 }
 const { mousedown, mousemove, mouseup, mouseEnter, state } = useBarMouseEvent(
   props.cellWidth,
-  onAddLink
+  onAddLink,
+  test
 )
+const tooltipInfo = ref(null)
+
+const t = debounce((task, e) => {
+  console.log(task, e, 112)
+  // (e) => console.log(e, task)
+})
+
+// TODO: 定位callback
+const onDomHover = debounce((task: TaskItem, e: MouseEvent) => {
+  const taskDom = locate(e)
+  if (popperInstance.value) {
+    popperInstance.value?.update()
+  } else {
+    tooltipInfo.value = task
+    const tooltip = document.querySelector('#tooltip')
+    popperInstance.value = createPopper(taskDom, tooltip, {
+      placement: 'bottom', // 设置 Tooltip 的位置，可以是 'top', 'bottom', 'right', 'left' 等
+      modifiers: {
+        // offset: {
+        //   offset: '0, 10' // 设置 Tooltip 的偏移量
+        // }
+      }
+    })
+  }
+})
+
+const onDomLeave = debounce((e: MouseEvent) => {
+  if (popperInstance.value) {
+    popperInstance.value?.destroy()
+    popperInstance.value = null
+  } else {
+  }
+})
 
 function taskStyle(task) {
   const attr = positionMap[task.id]
@@ -94,6 +135,22 @@ const lineHeight = computed(() => {
 </script>
 
 <style scoped lang="less">
+.test {
+  color: black;
+  position: absolute;
+  left: 200px;
+  top: 200px;
+}
+#tooltip {
+  background-color: #333;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  position: absolute;
+  left: -200px;
+  top: -200px;
+}
 .bars {
   position: absolute;
   top: 0;

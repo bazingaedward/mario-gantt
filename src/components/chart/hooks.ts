@@ -1,9 +1,11 @@
 import { locate } from '@/utils'
-import { inject, reactive, toValue } from 'vue'
+import { createPopper } from '@popperjs/core'
+import { inject, reactive, toValue, type Ref } from 'vue'
 
 export const useBarMouseEvent = (
   cellWidth: number,
-  onAddLink: (e: { id: number; position: number }) => void
+  onAddLink: (e: { id: number; position: number }) => void,
+  barRef: Ref
 ) => {
   const positionMap = inject('positionMap', {})
   const tasks = inject('tasks', [])
@@ -180,7 +182,8 @@ export const useBarMouseEvent = (
   }
 
   function mouseEnter(e: MouseEvent) {
-    console.log(e, 11)
+    // 初始化popperInstance
+    // popperInstance.update()
   }
 
   //   function click(e) {
